@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package group.v1;
+
+option go_package = "github.com/adk-saugat/rally/gen/group/v1;groupv1";

@@ -1,0 +1,5 @@
+syntax = "proto3";
+
+package location.v1;
+
+option go_package = "github.com/adk-saugat/rally/gen/location/v1;locationv1";
