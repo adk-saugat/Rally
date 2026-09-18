@@ -1,4 +1,4 @@
-.PHONY: help gen tidy clean up down logs psql migrate-up migrate-down migrate-status migrate-create
+.PHONY: help gen tidy clean up down logs psql migrate-up migrate-down migrate-status migrate-create run-auth
 
 export PATH := $(PATH):$(shell go env GOPATH)/bin
 
@@ -14,6 +14,7 @@ help:
 	@echo "make migrate-down      roll back the last Auth migration"
 	@echo "make migrate-status    show Auth migration status"
 	@echo "make migrate-create name=add_foo   create a new Auth migration file"
+	@echo "make run-auth          start the Auth gRPC server"
 	@echo "make gen               generate Go from .proto files"
 	@echo "make tidy              go mod tidy"
 	@echo "make clean             remove generated proto code"
@@ -58,3 +59,6 @@ migrate-status:
 migrate-create:
 	mkdir -p $(GOOSE_DIR)
 	goose -dir $(GOOSE_DIR) create $(name) sql
+
+run-auth:
+	go run ./services/auth/cmd/server
