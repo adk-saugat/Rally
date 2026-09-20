@@ -3,3 +3,37 @@ syntax = "proto3";
 package group.v1;
 
 option go_package = "github.com/adk-saugat/rally/gen/group/v1;groupv1";
+
+import "shared/v1/user.proto";
+
+service GroupService {
+    rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
+    rpc JoinGroup(JoinGroupRequest) returns (JoinGroupResponse);
+    rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
+}
+
+message CreateGroupRequest {
+    string name = 1;
+}
+
+message CreateGroupResponse {
+    string group_id = 1;
+    string invite_code = 2;
+}
+
+message JoinGroupRequest {
+    string invite_code = 1;
+}
+
+message JoinGroupResponse {
+    string group_id = 1;
+    string name = 2;
+}
+
+message ListMembersRequest {
+    string group_id = 1;
+}
+
+message ListMembersResponse {
+    repeated shared.v1.User members = 1;
+}

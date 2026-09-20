@@ -5,6 +5,7 @@ import (
 	"errors"
 	"strings"
 
+	"github.com/adk-saugat/rally/shared/types"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -15,16 +16,9 @@ var (
 	ErrEmailTaken = errors.New("email already taken")
 )
 
-type User struct {
-	ID           string
-	Email        string
-	PasswordHash string
-	FirstName    string
-}
-
 type UserRepository interface {
 	CreateUser(ctx context.Context, email, passwordHash, firstName string) (string, error)
-	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	GetUserByEmail(ctx context.Context, email string) (*types.User, error)
 }
 
 type userRepository struct {
@@ -66,14 +60,14 @@ func (repo *userRepository) CreateUser(ctx context.Context, email, passwordHash,
 	return userID, nil
 }
 
-func (repo *userRepository) GetUserByEmail(ctx context.Context, email string) (*User, error) {
+func (repo *userRepository) GetUserByEmail(ctx context.Context, email string) (*types.User, error) {
 	const getUserByEmailQuery = `
 		SELECT id, email, password_hash, first_name
 		FROM users
 		WHERE lower(email) = lower($1)
 	`
 
-	var user User
+	var user types.User
 	err := repo.pool.QueryRow(ctx, getUserByEmailQuery, email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.FirstName)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, ErrNotFound
