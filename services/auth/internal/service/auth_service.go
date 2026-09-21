@@ -7,12 +7,7 @@ import (
 
 	"github.com/adk-saugat/rally/services/auth/internal/repository"
 	"github.com/adk-saugat/rally/services/auth/internal/utils"
-)
-
-var (
-	ErrInvalidInput       = errors.New("invalid input")
-	ErrEmailTaken         = repository.ErrEmailTaken
-	ErrInvalidCredentials = errors.New("invalid credentials")
+	"github.com/adk-saugat/rally/shared/types"
 )
 
 type AuthService struct {
@@ -31,7 +26,7 @@ func (auth *AuthService) SignUp(ctx context.Context, firstName, email, password 
 	firstName = strings.TrimSpace(firstName)
 	email = strings.TrimSpace(email)
 	if firstName == "" || email == "" || password == "" {
-		return "", ErrInvalidInput
+		return "", types.ErrInvalidInput
 	}
 
 	passwordHash, err := utils.HashPassword(password)
@@ -41,9 +36,6 @@ func (auth *AuthService) SignUp(ctx context.Context, firstName, email, password 
 
 	userID, err := auth.users.CreateUser(ctx, email, passwordHash, firstName)
 	if err != nil {
-		if errors.Is(err, repository.ErrEmailTaken) {
-			return "", ErrEmailTaken
-		}
 		return "", err
 	}
 	return userID, nil
@@ -52,19 +44,19 @@ func (auth *AuthService) SignUp(ctx context.Context, firstName, email, password 
 func (auth *AuthService) Login(ctx context.Context, email, password string) (string, error) {
 	email = strings.TrimSpace(email)
 	if email == "" || password == "" {
-		return "", ErrInvalidInput
+		return "", types.ErrInvalidInput
 	}
 
 	user, err := auth.users.GetUserByEmail(ctx, email)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			return "", ErrInvalidCredentials
+		if errors.Is(err, types.ErrNotFound) {
+			return "", types.ErrInvalidCredentials
 		}
 		return "", err
 	}
 
 	if !utils.CheckPassword(user.PasswordHash, password) {
-		return "", ErrInvalidCredentials
+		return "", types.ErrInvalidCredentials
 	}
 
 	return utils.SignAccessToken(auth.jwtSecret, user.ID)

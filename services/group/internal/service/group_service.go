@@ -4,19 +4,10 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
-	"errors"
 	"strings"
 
 	"github.com/adk-saugat/rally/services/group/internal/repository"
 	"github.com/adk-saugat/rally/shared/types"
-)
-
-var (
-	ErrInvalidInput  = errors.New("invalid input")
-	ErrUnauthorized  = errors.New("user id is required")
-	ErrNotFound      = repository.ErrNotFound
-	ErrAlreadyMember    = repository.ErrAlreadyMember
-	ErrPermissionDenied = errors.New("not a member of this group")
 )
 
 type GroupService interface {
@@ -36,12 +27,12 @@ func NewGroupService(repo repository.GroupRepository) GroupService {
 func (service *groupService) CreateGroup(ctx context.Context, name, userID string) (*types.Group, error) {
 	userID = strings.TrimSpace(userID)
 	if userID == "" {
-		return nil, ErrUnauthorized
+		return nil, types.ErrUnauthorized
 	}
 
 	name = strings.TrimSpace(name)
 	if name == "" {
-		return nil, ErrInvalidInput
+		return nil, types.ErrInvalidInput
 	}
 
 	inviteCode, err := generateInviteCode()
@@ -64,12 +55,12 @@ func (service *groupService) CreateGroup(ctx context.Context, name, userID strin
 func (service *groupService) JoinGroup(ctx context.Context, inviteCode, userID string) (*types.Group, error) {
 	userID = strings.TrimSpace(userID)
 	if userID == "" {
-		return nil, ErrUnauthorized
+		return nil, types.ErrUnauthorized
 	}
 
 	inviteCode = strings.TrimSpace(inviteCode)
 	if inviteCode == "" {
-		return nil, ErrInvalidInput
+		return nil, types.ErrInvalidInput
 	}
 
 	group, err := service.repo.GetGroupByInviteCode(ctx, inviteCode)
@@ -87,12 +78,12 @@ func (service *groupService) JoinGroup(ctx context.Context, inviteCode, userID s
 func (service *groupService) ListMembers(ctx context.Context, groupID, userID string) ([]*types.User, error) {
 	userID = strings.TrimSpace(userID)
 	if userID == "" {
-		return nil, ErrUnauthorized
+		return nil, types.ErrUnauthorized
 	}
 
 	groupID = strings.TrimSpace(groupID)
 	if groupID == "" {
-		return nil, ErrInvalidInput
+		return nil, types.ErrInvalidInput
 	}
 
 	members, err := service.repo.ListMembers(ctx, groupID)
@@ -106,7 +97,7 @@ func (service *groupService) ListMembers(ctx context.Context, groupID, userID st
 		}
 	}
 
-	return nil, ErrPermissionDenied
+	return nil, types.ErrPermissionDenied
 }
 
 func generateInviteCode() (string, error) {

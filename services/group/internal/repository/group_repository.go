@@ -10,11 +10,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var (
-	ErrNotFound      = errors.New("group not found")
-	ErrAlreadyMember = errors.New("already a member")
-)
-
 type GroupRepository interface {
 	CreateGroup(ctx context.Context, group *types.Group, creatorUserID string) error
 	GetGroupByInviteCode(ctx context.Context, inviteCode string) (*types.Group, error)
@@ -28,6 +23,18 @@ type groupRepository struct {
 
 func NewGroupRepository(pool *pgxpool.Pool) GroupRepository {
 	return &groupRepository{pool: pool}
+}
+
+func Connect(ctx context.Context, databaseURL string) (*pgxpool.Pool, error) {
+	pool, err := pgxpool.New(ctx, databaseURL)
+	if err != nil {
+		return nil, err
+	}
+	if err := pool.Ping(ctx); err != nil {
+		pool.Close()
+		return nil, err
+	}
+	return pool, nil
 }
 
 func (repo *groupRepository) CreateGroup(ctx context.Context, group *types.Group, creatorUserID string) error {
@@ -60,7 +67,7 @@ func (repo *groupRepository) GetGroupByInviteCode(ctx context.Context, inviteCod
 		"SELECT id, name, invite_code FROM groups WHERE invite_code = $1",
 		inviteCode).Scan(&group.ID, &group.Name, &group.InviteCode)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, ErrNotFound
+		return nil, types.ErrNotFound
 	}
 	if err != nil {
 		return nil, err
@@ -73,7 +80,7 @@ func (repo *groupRepository) JoinGroup(ctx context.Context, groupID, userID stri
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return ErrAlreadyMember
+			return types.ErrAlreadyMember
 		}
 		return err
 	}

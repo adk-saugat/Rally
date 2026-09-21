@@ -7,7 +7,6 @@
 package groupv1
 
 import (
-	v1 "github.com/adk-saugat/rally/gen/shared/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -260,7 +259,7 @@ func (x *ListMembersRequest) GetGroupId() string {
 
 type ListMembersResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Members       []*v1.User             `protobuf:"bytes,1,rep,name=members,proto3" json:"members,omitempty"`
+	Members       []*User                `protobuf:"bytes,1,rep,name=members,proto3" json:"members,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -295,18 +294,78 @@ func (*ListMembersResponse) Descriptor() ([]byte, []int) {
 	return file_group_v1_group_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *ListMembersResponse) GetMembers() []*v1.User {
+func (x *ListMembersResponse) GetMembers() []*User {
 	if x != nil {
 		return x.Members
 	}
 	return nil
 }
 
+type User struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	FirstName     string                 `protobuf:"bytes,3,opt,name=first_name,json=firstName,proto3" json:"first_name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *User) Reset() {
+	*x = User{}
+	mi := &file_group_v1_group_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *User) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*User) ProtoMessage() {}
+
+func (x *User) ProtoReflect() protoreflect.Message {
+	mi := &file_group_v1_group_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use User.ProtoReflect.Descriptor instead.
+func (*User) Descriptor() ([]byte, []int) {
+	return file_group_v1_group_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *User) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *User) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *User) GetFirstName() string {
+	if x != nil {
+		return x.FirstName
+	}
+	return ""
+}
+
 var File_group_v1_group_proto protoreflect.FileDescriptor
 
 const file_group_v1_group_proto_rawDesc = "" +
 	"\n" +
-	"\x14group/v1/group.proto\x12\bgroup.v1\x1a\x14shared/v1/user.proto\"(\n" +
+	"\x14group/v1/group.proto\x12\bgroup.v1\"(\n" +
 	"\x12CreateGroupRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\"Q\n" +
 	"\x13CreateGroupResponse\x12\x19\n" +
@@ -320,9 +379,14 @@ const file_group_v1_group_proto_rawDesc = "" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\"/\n" +
 	"\x12ListMembersRequest\x12\x19\n" +
-	"\bgroup_id\x18\x01 \x01(\tR\agroupId\"@\n" +
-	"\x13ListMembersResponse\x12)\n" +
-	"\amembers\x18\x01 \x03(\v2\x0f.shared.v1.UserR\amembers2\xec\x01\n" +
+	"\bgroup_id\x18\x01 \x01(\tR\agroupId\"?\n" +
+	"\x13ListMembersResponse\x12(\n" +
+	"\amembers\x18\x01 \x03(\v2\x0e.group.v1.UserR\amembers\"T\n" +
+	"\x04User\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1d\n" +
+	"\n" +
+	"first_name\x18\x03 \x01(\tR\tfirstName2\xec\x01\n" +
 	"\fGroupService\x12J\n" +
 	"\vCreateGroup\x12\x1c.group.v1.CreateGroupRequest\x1a\x1d.group.v1.CreateGroupResponse\x12D\n" +
 	"\tJoinGroup\x12\x1a.group.v1.JoinGroupRequest\x1a\x1b.group.v1.JoinGroupResponse\x12J\n" +
@@ -340,7 +404,7 @@ func file_group_v1_group_proto_rawDescGZIP() []byte {
 	return file_group_v1_group_proto_rawDescData
 }
 
-var file_group_v1_group_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_group_v1_group_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_group_v1_group_proto_goTypes = []any{
 	(*CreateGroupRequest)(nil),  // 0: group.v1.CreateGroupRequest
 	(*CreateGroupResponse)(nil), // 1: group.v1.CreateGroupResponse
@@ -348,10 +412,10 @@ var file_group_v1_group_proto_goTypes = []any{
 	(*JoinGroupResponse)(nil),   // 3: group.v1.JoinGroupResponse
 	(*ListMembersRequest)(nil),  // 4: group.v1.ListMembersRequest
 	(*ListMembersResponse)(nil), // 5: group.v1.ListMembersResponse
-	(*v1.User)(nil),             // 6: shared.v1.User
+	(*User)(nil),                // 6: group.v1.User
 }
 var file_group_v1_group_proto_depIdxs = []int32{
-	6, // 0: group.v1.ListMembersResponse.members:type_name -> shared.v1.User
+	6, // 0: group.v1.ListMembersResponse.members:type_name -> group.v1.User
 	0, // 1: group.v1.GroupService.CreateGroup:input_type -> group.v1.CreateGroupRequest
 	2, // 2: group.v1.GroupService.JoinGroup:input_type -> group.v1.JoinGroupRequest
 	4, // 3: group.v1.GroupService.ListMembers:input_type -> group.v1.ListMembersRequest
@@ -376,7 +440,7 @@ func file_group_v1_group_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_group_v1_group_proto_rawDesc), len(file_group_v1_group_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

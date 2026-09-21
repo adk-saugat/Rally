@@ -11,11 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-var (
-	ErrNotFound   = errors.New("user not found")
-	ErrEmailTaken = errors.New("email already taken")
-)
-
 type UserRepository interface {
 	CreateUser(ctx context.Context, email, passwordHash, firstName string) (string, error)
 	GetUserByEmail(ctx context.Context, email string) (*types.User, error)
@@ -53,7 +48,7 @@ func (repo *userRepository) CreateUser(ctx context.Context, email, passwordHash,
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == "23505" {
-			return "", ErrEmailTaken
+			return "", types.ErrEmailTaken
 		}
 		return "", err
 	}
@@ -70,7 +65,7 @@ func (repo *userRepository) GetUserByEmail(ctx context.Context, email string) (*
 	var user types.User
 	err := repo.pool.QueryRow(ctx, getUserByEmailQuery, email).Scan(&user.ID, &user.Email, &user.PasswordHash, &user.FirstName)
 	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, ErrNotFound
+		return nil, types.ErrNotFound
 	}
 	if err != nil {
 		return nil, err

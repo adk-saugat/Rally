@@ -14,11 +14,11 @@ type Config struct {
 
 func Load() Config {
 	_ = godotenv.Load()
-	_ = godotenv.Load("services/auth/.env")
+	_ = godotenv.Load("services/group/.env")
 
 	return Config{
-		Port:        env("PORT", "50051"),
-		DatabaseURL: env("DATABASE_URL", "postgres://rally:rally@localhost:5433/auth?sslmode=disable"),
+		Port:        env("PORT", "50052"),
+		DatabaseURL: env("DATABASE_URL", "postgres://rally:rally@localhost:5434/group?sslmode=disable"),
 		JWTSecret:   env("JWT_SECRET", "rally-dev-jwt-secret"),
 	}
 }

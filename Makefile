@@ -1,7 +1,7 @@
 .PHONY: help gen tidy clean up down logs psql psql-group \
 	migrate-up migrate-down migrate-status migrate-create \
 	migrate-group-up migrate-group-down migrate-group-status migrate-group-create \
-	run-auth
+	run-auth run-group
 
 export PATH := $(PATH):$(shell go env GOPATH)/bin
 
@@ -27,6 +27,7 @@ help:
 	@echo "make migrate-group-status    show Group migration status"
 	@echo "make migrate-group-create name=add_foo   create a new Group migration file"
 	@echo "make run-auth                start the Auth gRPC server"
+	@echo "make run-group               start the Group gRPC server"
 	@echo "make gen                     generate Go from .proto files"
 	@echo "make tidy                    go mod tidy"
 	@echo "make clean                   remove generated proto code"
@@ -37,7 +38,6 @@ gen:
 	  -I proto \
 	  --go_out=gen --go_opt=paths=source_relative \
 	  --go-grpc_out=gen --go-grpc_opt=paths=source_relative \
-	  shared/v1/user.proto \
 	  auth/v1/auth.proto \
 	  group/v1/group.proto \
 	  location/v1/location.proto
@@ -46,7 +46,7 @@ tidy:
 	go mod tidy
 
 clean:
-	rm -rf gen/auth gen/group gen/location gen/shared
+	rm -rf gen/auth gen/group gen/location
 
 up:
 	docker compose up -d auth-postgres group-postgres --wait
@@ -91,3 +91,6 @@ migrate-group-create:
 
 run-auth:
 	go run ./services/auth/cmd/server
+
+run-group:
+	go run ./services/group/cmd/server
