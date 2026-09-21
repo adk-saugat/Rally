@@ -1,23 +1,35 @@
-.PHONY: help gen tidy clean up down logs psql migrate-up migrate-down migrate-status migrate-create run-auth
+.PHONY: help gen tidy clean up down logs psql psql-group \
+	migrate-up migrate-down migrate-status migrate-create \
+	migrate-group-up migrate-group-down migrate-group-status migrate-group-create \
+	run-auth
 
 export PATH := $(PATH):$(shell go env GOPATH)/bin
 
-DATABASE_URL ?= postgres://rally:rally@localhost:5433/auth?sslmode=disable
-GOOSE_DIR := services/auth/migrations
+AUTH_DATABASE_URL ?= postgres://rally:rally@localhost:5433/auth?sslmode=disable
+GROUP_DATABASE_URL ?= postgres://rally:rally@localhost:5434/group?sslmode=disable
+DATABASE_URL ?= $(AUTH_DATABASE_URL)
+AUTH_GOOSE_DIR := services/auth/migrations
+GROUP_GOOSE_DIR := services/group/migrations
+GOOSE_DIR := $(AUTH_GOOSE_DIR)
 
 help:
-	@echo "make up                start Postgres"
-	@echo "make down              stop Postgres"
-	@echo "make logs              tail Postgres logs"
-	@echo "make psql              open a Postgres shell (auth database)"
-	@echo "make migrate-up        apply pending Auth migrations"
-	@echo "make migrate-down      roll back the last Auth migration"
-	@echo "make migrate-status    show Auth migration status"
+	@echo "make up                      start Auth and Group Postgres"
+	@echo "make down                    stop Postgres"
+	@echo "make logs                    tail Postgres logs"
+	@echo "make psql                    open a Postgres shell (auth)"
+	@echo "make psql-group              open a Postgres shell (group)"
+	@echo "make migrate-up              apply pending Auth migrations"
+	@echo "make migrate-down            roll back the last Auth migration"
+	@echo "make migrate-status          show Auth migration status"
 	@echo "make migrate-create name=add_foo   create a new Auth migration file"
-	@echo "make run-auth          start the Auth gRPC server"
-	@echo "make gen               generate Go from .proto files"
-	@echo "make tidy              go mod tidy"
-	@echo "make clean             remove generated proto code"
+	@echo "make migrate-group-up        apply pending Group migrations"
+	@echo "make migrate-group-down      roll back the last Group migration"
+	@echo "make migrate-group-status    show Group migration status"
+	@echo "make migrate-group-create name=add_foo   create a new Group migration file"
+	@echo "make run-auth                start the Auth gRPC server"
+	@echo "make gen                     generate Go from .proto files"
+	@echo "make tidy                    go mod tidy"
+	@echo "make clean                   remove generated proto code"
 
 gen:
 	mkdir -p gen
@@ -37,29 +49,45 @@ clean:
 	rm -rf gen/auth gen/group gen/location gen/shared
 
 up:
-	docker compose up -d postgres --wait
+	docker compose up -d auth-postgres group-postgres --wait
 
 down:
 	docker compose down
 
 logs:
-	docker compose logs -f postgres
+	docker compose logs -f auth-postgres group-postgres
 
 psql:
-	docker compose exec postgres psql -U rally -d auth
+	docker compose exec auth-postgres psql -U rally -d auth
+
+psql-group:
+	docker compose exec group-postgres psql -U rally -d group
 
 migrate-up: up
-	goose -dir $(GOOSE_DIR) postgres "$(DATABASE_URL)" up
+	goose -dir $(AUTH_GOOSE_DIR) postgres "$(AUTH_DATABASE_URL)" up
 
 migrate-down:
-	goose -dir $(GOOSE_DIR) postgres "$(DATABASE_URL)" down
+	goose -dir $(AUTH_GOOSE_DIR) postgres "$(AUTH_DATABASE_URL)" down
 
 migrate-status:
-	goose -dir $(GOOSE_DIR) postgres "$(DATABASE_URL)" status
+	goose -dir $(AUTH_GOOSE_DIR) postgres "$(AUTH_DATABASE_URL)" status
 
 migrate-create:
-	mkdir -p $(GOOSE_DIR)
-	goose -dir $(GOOSE_DIR) create $(name) sql
+	mkdir -p $(AUTH_GOOSE_DIR)
+	goose -dir $(AUTH_GOOSE_DIR) create $(name) sql
+
+migrate-group-up: up
+	goose -dir $(GROUP_GOOSE_DIR) postgres "$(GROUP_DATABASE_URL)" up
+
+migrate-group-down:
+	goose -dir $(GROUP_GOOSE_DIR) postgres "$(GROUP_DATABASE_URL)" down
+
+migrate-group-status:
+	goose -dir $(GROUP_GOOSE_DIR) postgres "$(GROUP_DATABASE_URL)" status
+
+migrate-group-create:
+	mkdir -p $(GROUP_GOOSE_DIR)
+	goose -dir $(GROUP_GOOSE_DIR) create $(name) sql
 
 run-auth:
 	go run ./services/auth/cmd/server
