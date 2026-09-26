@@ -10,6 +10,7 @@ type Config struct {
 	Port        string
 	DatabaseURL string
 	JWTSecret   string
+	AuthAddress string
 }
 
 func Load() Config {
@@ -20,6 +21,7 @@ func Load() Config {
 		Port:        env("PORT", "50052"),
 		DatabaseURL: env("DATABASE_URL", "postgres://rally:rally@localhost:5434/group?sslmode=disable"),
 		JWTSecret:   env("JWT_SECRET", "rally-dev-jwt-secret"),
+		AuthAddress: env("AUTH_ADDRESS", "localhost:50051"),
 	}
 }
 

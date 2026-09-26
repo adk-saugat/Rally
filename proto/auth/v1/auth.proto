@@ -7,6 +7,7 @@ option go_package = "github.com/adk-saugat/rally/gen/auth/v1;authv1";
 service AuthService {
     rpc SignUp(SignUpRequest) returns (SignUpResponse);
     rpc Login(LoginRequest) returns (LoginResponse);
+    rpc GetUsers(GetUsersRequest) returns (GetUsersResponse);
 }
 
 message SignUpRequest {
@@ -26,4 +27,18 @@ message LoginRequest {
 
 message LoginResponse {
     string token = 1;
+}
+
+message User {
+    string user_id = 1;
+    string email = 2;
+    string first_name = 3;
+}
+
+message GetUsersRequest {
+    repeated string user_ids = 1;
+}
+
+message GetUsersResponse {
+    repeated User users = 1;
 }

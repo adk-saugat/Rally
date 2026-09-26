@@ -14,6 +14,7 @@ import (
 type UserRepository interface {
 	CreateUser(ctx context.Context, email, passwordHash, firstName string) (string, error)
 	GetUserByEmail(ctx context.Context, email string) (*types.User, error)
+	GetUsersByIDs(ctx context.Context, userIDs []string) ([]*types.User, error)
 }
 
 type userRepository struct {
@@ -71,4 +72,35 @@ func (repo *userRepository) GetUserByEmail(ctx context.Context, email string) (*
 		return nil, err
 	}
 	return &user, nil
+}
+
+func (repo *userRepository) GetUsersByIDs(ctx context.Context, userIDs []string) ([]*types.User, error) {
+	if len(userIDs) == 0 {
+		return []*types.User{}, nil
+	}
+
+	const getUsersByIDsQuery = `
+		SELECT id, email, first_name
+		FROM users
+		WHERE id = ANY($1::uuid[])
+	`
+
+	rows, err := repo.pool.Query(ctx, getUsersByIDsQuery, userIDs)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	users := make([]*types.User, 0, len(userIDs))
+	for rows.Next() {
+		var user types.User
+		if err := rows.Scan(&user.ID, &user.Email, &user.FirstName); err != nil {
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return users, nil
 }

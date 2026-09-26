@@ -77,7 +77,11 @@ func (handler *GroupHandler) ListMembers(ctx context.Context, request *groupv1.L
 
 	responseMembers := make([]*groupv1.User, 0, len(members))
 	for _, member := range members {
-		responseMembers = append(responseMembers, &groupv1.User{UserId: member.ID})
+		responseMembers = append(responseMembers, &groupv1.User{
+			UserId:    member.ID,
+			Email:     member.Email,
+			FirstName: member.FirstName,
+		})
 	}
 
 	return &groupv1.ListMembersResponse{Members: responseMembers}, nil

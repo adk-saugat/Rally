@@ -8,6 +8,7 @@ import (
 	"syscall"
 
 	groupv1 "github.com/adk-saugat/rally/gen/group/v1"
+	"github.com/adk-saugat/rally/services/group/internal/clients"
 	"github.com/adk-saugat/rally/services/group/internal/config"
 	"github.com/adk-saugat/rally/services/group/internal/handler"
 	"github.com/adk-saugat/rally/services/group/internal/repository"
@@ -30,7 +31,13 @@ func main() {
 	defer pool.Close()
 
 	groups := repository.NewGroupRepository(pool)
-	groupService := service.NewGroupService(groups)
+	authClient, err := clients.NewAuthClient(cfg.AuthAddress)
+	if err != nil {
+		log.Fatalf("connect auth: %v", err)
+	}
+	defer authClient.Close()
+
+	groupService := service.NewGroupService(groups, authClient)
 	groupHandler := handler.NewGroupHandler(groupService)
 
 	grpcServer := grpc.NewServer(grpc.UnaryInterceptor(utils.UnaryAuth(cfg.JWTSecret)))

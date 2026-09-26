@@ -10,6 +10,10 @@ import (
 	"github.com/adk-saugat/rally/shared/types"
 )
 
+type UserDirectory interface {
+	GetUsers(ctx context.Context, userIDs []string) ([]*types.User, error)
+}
+
 type GroupService interface {
 	CreateGroup(ctx context.Context, name, userID string) (*types.Group, error)
 	JoinGroup(ctx context.Context, inviteCode, userID string) (*types.Group, error)
@@ -17,11 +21,12 @@ type GroupService interface {
 }
 
 type groupService struct {
-	repo repository.GroupRepository
+	repo  repository.GroupRepository
+	users UserDirectory
 }
 
-func NewGroupService(repo repository.GroupRepository) GroupService {
-	return &groupService{repo: repo}
+func NewGroupService(repo repository.GroupRepository, users UserDirectory) GroupService {
+	return &groupService{repo: repo, users: users}
 }
 
 func (service *groupService) CreateGroup(ctx context.Context, name, userID string) (*types.Group, error) {
@@ -91,13 +96,38 @@ func (service *groupService) ListMembers(ctx context.Context, groupID, userID st
 		return nil, err
 	}
 
+	isMember := false
+	userIDs := make([]string, 0, len(members))
 	for _, member := range members {
+		userIDs = append(userIDs, member.ID)
 		if member.ID == userID {
-			return members, nil
+			isMember = true
 		}
 	}
+	if !isMember {
+		return nil, types.ErrPermissionDenied
+	}
 
-	return nil, types.ErrPermissionDenied
+	profiles, err := service.users.GetUsers(ctx, userIDs)
+	if err != nil {
+		return nil, err
+	}
+
+	profilesByID := make(map[string]*types.User, len(profiles))
+	for _, profile := range profiles {
+		profilesByID[profile.ID] = profile
+	}
+
+	for _, member := range members {
+		profile, ok := profilesByID[member.ID]
+		if !ok {
+			continue
+		}
+		member.Email = profile.Email
+		member.FirstName = profile.FirstName
+	}
+
+	return members, nil
 }
 
 func generateInviteCode() (string, error) {

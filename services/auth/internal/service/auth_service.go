@@ -61,3 +61,15 @@ func (auth *AuthService) Login(ctx context.Context, email, password string) (str
 
 	return utils.SignAccessToken(auth.jwtSecret, user.ID)
 }
+
+func (auth *AuthService) GetUsers(ctx context.Context, userIDs []string) ([]*types.User, error) {
+	ids := make([]string, 0, len(userIDs))
+	for _, userID := range userIDs {
+		userID = strings.TrimSpace(userID)
+		if userID != "" {
+			ids = append(ids, userID)
+		}
+	}
+
+	return auth.users.GetUsersByIDs(ctx, ids)
+}

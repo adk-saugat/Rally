@@ -42,3 +42,25 @@ func (handler *AuthHandler) Login(ctx context.Context, request *authv1.LoginRequ
 
 	return &authv1.LoginResponse{Token: token}, nil
 }
+
+func (handler *AuthHandler) GetUsers(ctx context.Context, request *authv1.GetUsersRequest) (*authv1.GetUsersResponse, error) {
+	if request == nil {
+		return nil, types.GRPCError(types.ErrInvalidInput)
+	}
+
+	users, err := handler.auth.GetUsers(ctx, request.GetUserIds())
+	if err != nil {
+		return nil, types.GRPCError(err)
+	}
+
+	responseUsers := make([]*authv1.User, 0, len(users))
+	for _, user := range users {
+		responseUsers = append(responseUsers, &authv1.User{
+			UserId:    user.ID,
+			Email:     user.Email,
+			FirstName: user.FirstName,
+		})
+	}
+
+	return &authv1.GetUsersResponse{Users: responseUsers}, nil
+}
