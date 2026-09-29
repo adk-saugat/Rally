@@ -22,6 +22,7 @@ const (
 	GroupService_CreateGroup_FullMethodName = "/group.v1.GroupService/CreateGroup"
 	GroupService_JoinGroup_FullMethodName   = "/group.v1.GroupService/JoinGroup"
 	GroupService_ListMembers_FullMethodName = "/group.v1.GroupService/ListMembers"
+	GroupService_IsMember_FullMethodName    = "/group.v1.GroupService/IsMember"
 )
 
 // GroupServiceClient is the client API for GroupService service.
@@ -31,6 +32,7 @@ type GroupServiceClient interface {
 	CreateGroup(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*CreateGroupResponse, error)
 	JoinGroup(ctx context.Context, in *JoinGroupRequest, opts ...grpc.CallOption) (*JoinGroupResponse, error)
 	ListMembers(ctx context.Context, in *ListMembersRequest, opts ...grpc.CallOption) (*ListMembersResponse, error)
+	IsMember(ctx context.Context, in *IsMemberRequest, opts ...grpc.CallOption) (*IsMemberResponse, error)
 }
 
 type groupServiceClient struct {
@@ -71,6 +73,16 @@ func (c *groupServiceClient) ListMembers(ctx context.Context, in *ListMembersReq
 	return out, nil
 }
 
+func (c *groupServiceClient) IsMember(ctx context.Context, in *IsMemberRequest, opts ...grpc.CallOption) (*IsMemberResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(IsMemberResponse)
+	err := c.cc.Invoke(ctx, GroupService_IsMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GroupServiceServer is the server API for GroupService service.
 // All implementations must embed UnimplementedGroupServiceServer
 // for forward compatibility.
@@ -78,6 +90,7 @@ type GroupServiceServer interface {
 	CreateGroup(context.Context, *CreateGroupRequest) (*CreateGroupResponse, error)
 	JoinGroup(context.Context, *JoinGroupRequest) (*JoinGroupResponse, error)
 	ListMembers(context.Context, *ListMembersRequest) (*ListMembersResponse, error)
+	IsMember(context.Context, *IsMemberRequest) (*IsMemberResponse, error)
 	mustEmbedUnimplementedGroupServiceServer()
 }
 
@@ -96,6 +109,9 @@ func (UnimplementedGroupServiceServer) JoinGroup(context.Context, *JoinGroupRequ
 }
 func (UnimplementedGroupServiceServer) ListMembers(context.Context, *ListMembersRequest) (*ListMembersResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListMembers not implemented")
+}
+func (UnimplementedGroupServiceServer) IsMember(context.Context, *IsMemberRequest) (*IsMemberResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method IsMember not implemented")
 }
 func (UnimplementedGroupServiceServer) mustEmbedUnimplementedGroupServiceServer() {}
 func (UnimplementedGroupServiceServer) testEmbeddedByValue()                      {}
@@ -172,6 +188,24 @@ func _GroupService_ListMembers_Handler(srv interface{}, ctx context.Context, dec
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GroupService_IsMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(IsMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GroupServiceServer).IsMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GroupService_IsMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GroupServiceServer).IsMember(ctx, req.(*IsMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GroupService_ServiceDesc is the grpc.ServiceDesc for GroupService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -190,6 +224,10 @@ var GroupService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListMembers",
 			Handler:    _GroupService_ListMembers_Handler,
+		},
+		{
+			MethodName: "IsMember",
+			Handler:    _GroupService_IsMember_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

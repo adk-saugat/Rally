@@ -8,6 +8,7 @@ service GroupService {
     rpc CreateGroup(CreateGroupRequest) returns (CreateGroupResponse);
     rpc JoinGroup(JoinGroupRequest) returns (JoinGroupResponse);
     rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
+    rpc IsMember(IsMemberRequest) returns (IsMemberResponse);
 }
 
 message CreateGroupRequest {
@@ -34,6 +35,14 @@ message ListMembersRequest {
 
 message ListMembersResponse {
     repeated User members = 1;
+}
+
+message IsMemberRequest {
+    string group_id = 1;
+}
+
+message IsMemberResponse {
+    bool is_member = 1;
 }
 
 message User {

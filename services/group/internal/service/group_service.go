@@ -18,6 +18,7 @@ type GroupService interface {
 	CreateGroup(ctx context.Context, name, userID string) (*types.Group, error)
 	JoinGroup(ctx context.Context, inviteCode, userID string) (*types.Group, error)
 	ListMembers(ctx context.Context, groupID, userID string) ([]*types.User, error)
+	IsMember(ctx context.Context, groupID, userID string) (bool, error)
 }
 
 type groupService struct {
@@ -128,6 +129,20 @@ func (service *groupService) ListMembers(ctx context.Context, groupID, userID st
 	}
 
 	return members, nil
+}
+
+func (service *groupService) IsMember(ctx context.Context, groupID, userID string) (bool, error) {
+	userID = strings.TrimSpace(userID)
+	if userID == "" {
+		return false, types.ErrUnauthorized
+	}
+
+	groupID = strings.TrimSpace(groupID)
+	if groupID == "" {
+		return false, types.ErrInvalidInput
+	}
+
+	return service.repo.IsMember(ctx, groupID, userID)
 }
 
 func generateInviteCode() (string, error) {

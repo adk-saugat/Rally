@@ -10,6 +10,7 @@ import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
+	sync "sync"
 	unsafe "unsafe"
 )
 
@@ -20,16 +21,117 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type LocationUpdate struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	GroupId         string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	UserId          string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Latitude        float64                `protobuf:"fixed64,3,opt,name=latitude,proto3" json:"latitude,omitempty"`
+	Longitude       float64                `protobuf:"fixed64,4,opt,name=longitude,proto3" json:"longitude,omitempty"`
+	TimestampUnixMs int64                  `protobuf:"varint,5,opt,name=timestamp_unix_ms,json=timestampUnixMs,proto3" json:"timestamp_unix_ms,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *LocationUpdate) Reset() {
+	*x = LocationUpdate{}
+	mi := &file_location_v1_location_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LocationUpdate) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LocationUpdate) ProtoMessage() {}
+
+func (x *LocationUpdate) ProtoReflect() protoreflect.Message {
+	mi := &file_location_v1_location_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LocationUpdate.ProtoReflect.Descriptor instead.
+func (*LocationUpdate) Descriptor() ([]byte, []int) {
+	return file_location_v1_location_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *LocationUpdate) GetGroupId() string {
+	if x != nil {
+		return x.GroupId
+	}
+	return ""
+}
+
+func (x *LocationUpdate) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *LocationUpdate) GetLatitude() float64 {
+	if x != nil {
+		return x.Latitude
+	}
+	return 0
+}
+
+func (x *LocationUpdate) GetLongitude() float64 {
+	if x != nil {
+		return x.Longitude
+	}
+	return 0
+}
+
+func (x *LocationUpdate) GetTimestampUnixMs() int64 {
+	if x != nil {
+		return x.TimestampUnixMs
+	}
+	return 0
+}
+
 var File_location_v1_location_proto protoreflect.FileDescriptor
 
 const file_location_v1_location_proto_rawDesc = "" +
 	"\n" +
-	"\x1alocation/v1/location.proto\x12\vlocation.v1B8Z6github.com/adk-saugat/rally/gen/location/v1;locationv1b\x06proto3"
+	"\x1alocation/v1/location.proto\x12\vlocation.v1\"\xaa\x01\n" +
+	"\x0eLocationUpdate\x12\x19\n" +
+	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x1a\n" +
+	"\blatitude\x18\x03 \x01(\x01R\blatitude\x12\x1c\n" +
+	"\tlongitude\x18\x04 \x01(\x01R\tlongitude\x12*\n" +
+	"\x11timestamp_unix_ms\x18\x05 \x01(\x03R\x0ftimestampUnixMs2a\n" +
+	"\x0fLocationService\x12N\n" +
+	"\x0eStreamLocation\x12\x1b.location.v1.LocationUpdate\x1a\x1b.location.v1.LocationUpdate(\x010\x01B8Z6github.com/adk-saugat/rally/gen/location/v1;locationv1b\x06proto3"
 
-var file_location_v1_location_proto_goTypes = []any{}
+var (
+	file_location_v1_location_proto_rawDescOnce sync.Once
+	file_location_v1_location_proto_rawDescData []byte
+)
+
+func file_location_v1_location_proto_rawDescGZIP() []byte {
+	file_location_v1_location_proto_rawDescOnce.Do(func() {
+		file_location_v1_location_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_location_v1_location_proto_rawDesc), len(file_location_v1_location_proto_rawDesc)))
+	})
+	return file_location_v1_location_proto_rawDescData
+}
+
+var file_location_v1_location_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_location_v1_location_proto_goTypes = []any{
+	(*LocationUpdate)(nil), // 0: location.v1.LocationUpdate
+}
 var file_location_v1_location_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
+	0, // 0: location.v1.LocationService.StreamLocation:input_type -> location.v1.LocationUpdate
+	0, // 1: location.v1.LocationService.StreamLocation:output_type -> location.v1.LocationUpdate
+	1, // [1:2] is the sub-list for method output_type
+	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -46,12 +148,13 @@ func file_location_v1_location_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_location_v1_location_proto_rawDesc), len(file_location_v1_location_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   0,
+			NumMessages:   1,
 			NumExtensions: 0,
-			NumServices:   0,
+			NumServices:   1,
 		},
 		GoTypes:           file_location_v1_location_proto_goTypes,
 		DependencyIndexes: file_location_v1_location_proto_depIdxs,
+		MessageInfos:      file_location_v1_location_proto_msgTypes,
 	}.Build()
 	File_location_v1_location_proto = out.File
 	file_location_v1_location_proto_goTypes = nil

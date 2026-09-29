@@ -87,6 +87,24 @@ func (handler *GroupHandler) ListMembers(ctx context.Context, request *groupv1.L
 	return &groupv1.ListMembersResponse{Members: responseMembers}, nil
 }
 
+func (handler *GroupHandler) IsMember(ctx context.Context, request *groupv1.IsMemberRequest) (*groupv1.IsMemberResponse, error) {
+	if request == nil {
+		return nil, types.GRPCError(types.ErrInvalidInput)
+	}
+
+	userID, err := userIDFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	isMember, err := handler.groups.IsMember(ctx, request.GetGroupId(), userID)
+	if err != nil {
+		return nil, types.GRPCError(err)
+	}
+
+	return &groupv1.IsMemberResponse{IsMember: isMember}, nil
+}
+
 func userIDFromContext(ctx context.Context) (string, error) {
 	userID := utils.UserIDFromContext(ctx)
 	if userID == "" {

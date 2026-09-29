@@ -15,6 +15,7 @@ type GroupRepository interface {
 	GetGroupByInviteCode(ctx context.Context, inviteCode string) (*types.Group, error)
 	JoinGroup(ctx context.Context, groupID, userID string) error
 	ListMembers(ctx context.Context, groupID string) ([]*types.User, error)
+	IsMember(ctx context.Context, groupID, userID string) (bool, error)
 }
 
 type groupRepository struct {
@@ -107,4 +108,15 @@ func (repo *groupRepository) ListMembers(ctx context.Context, groupID string) ([
 		return nil, err
 	}
 	return users, nil
+}
+
+func (repo *groupRepository) IsMember(ctx context.Context, groupID, userID string) (bool, error) {
+	var exists bool
+	err := repo.pool.QueryRow(ctx,
+		"SELECT EXISTS (SELECT 1 FROM group_members WHERE group_id = $1 AND user_id = $2)",
+		groupID, userID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
 }

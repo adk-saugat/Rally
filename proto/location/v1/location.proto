@@ -3,3 +3,15 @@ syntax = "proto3";
 package location.v1;
 
 option go_package = "github.com/adk-saugat/rally/gen/location/v1;locationv1";
+
+service LocationService {
+    rpc StreamLocation(stream LocationUpdate) returns (stream LocationUpdate);
+}
+
+message LocationUpdate {
+    string group_id = 1;
+    string user_id = 2;
+    double latitude = 3;
+    double longitude = 4;
+    int64 timestamp_unix_ms = 5;
+}

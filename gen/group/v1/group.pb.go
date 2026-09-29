@@ -301,6 +301,94 @@ func (x *ListMembersResponse) GetMembers() []*User {
 	return nil
 }
 
+type IsMemberRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GroupId       string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IsMemberRequest) Reset() {
+	*x = IsMemberRequest{}
+	mi := &file_group_v1_group_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IsMemberRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IsMemberRequest) ProtoMessage() {}
+
+func (x *IsMemberRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_group_v1_group_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IsMemberRequest.ProtoReflect.Descriptor instead.
+func (*IsMemberRequest) Descriptor() ([]byte, []int) {
+	return file_group_v1_group_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *IsMemberRequest) GetGroupId() string {
+	if x != nil {
+		return x.GroupId
+	}
+	return ""
+}
+
+type IsMemberResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	IsMember      bool                   `protobuf:"varint,1,opt,name=is_member,json=isMember,proto3" json:"is_member,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *IsMemberResponse) Reset() {
+	*x = IsMemberResponse{}
+	mi := &file_group_v1_group_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *IsMemberResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*IsMemberResponse) ProtoMessage() {}
+
+func (x *IsMemberResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_group_v1_group_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use IsMemberResponse.ProtoReflect.Descriptor instead.
+func (*IsMemberResponse) Descriptor() ([]byte, []int) {
+	return file_group_v1_group_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *IsMemberResponse) GetIsMember() bool {
+	if x != nil {
+		return x.IsMember
+	}
+	return false
+}
+
 type User struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -312,7 +400,7 @@ type User struct {
 
 func (x *User) Reset() {
 	*x = User{}
-	mi := &file_group_v1_group_proto_msgTypes[6]
+	mi := &file_group_v1_group_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -324,7 +412,7 @@ func (x *User) String() string {
 func (*User) ProtoMessage() {}
 
 func (x *User) ProtoReflect() protoreflect.Message {
-	mi := &file_group_v1_group_proto_msgTypes[6]
+	mi := &file_group_v1_group_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -337,7 +425,7 @@ func (x *User) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use User.ProtoReflect.Descriptor instead.
 func (*User) Descriptor() ([]byte, []int) {
-	return file_group_v1_group_proto_rawDescGZIP(), []int{6}
+	return file_group_v1_group_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *User) GetUserId() string {
@@ -381,16 +469,21 @@ const file_group_v1_group_proto_rawDesc = "" +
 	"\x12ListMembersRequest\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\"?\n" +
 	"\x13ListMembersResponse\x12(\n" +
-	"\amembers\x18\x01 \x03(\v2\x0e.group.v1.UserR\amembers\"T\n" +
+	"\amembers\x18\x01 \x03(\v2\x0e.group.v1.UserR\amembers\",\n" +
+	"\x0fIsMemberRequest\x12\x19\n" +
+	"\bgroup_id\x18\x01 \x01(\tR\agroupId\"/\n" +
+	"\x10IsMemberResponse\x12\x1b\n" +
+	"\tis_member\x18\x01 \x01(\bR\bisMember\"T\n" +
 	"\x04User\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x1d\n" +
 	"\n" +
-	"first_name\x18\x03 \x01(\tR\tfirstName2\xec\x01\n" +
+	"first_name\x18\x03 \x01(\tR\tfirstName2\xaf\x02\n" +
 	"\fGroupService\x12J\n" +
 	"\vCreateGroup\x12\x1c.group.v1.CreateGroupRequest\x1a\x1d.group.v1.CreateGroupResponse\x12D\n" +
 	"\tJoinGroup\x12\x1a.group.v1.JoinGroupRequest\x1a\x1b.group.v1.JoinGroupResponse\x12J\n" +
-	"\vListMembers\x12\x1c.group.v1.ListMembersRequest\x1a\x1d.group.v1.ListMembersResponseB2Z0github.com/adk-saugat/rally/gen/group/v1;groupv1b\x06proto3"
+	"\vListMembers\x12\x1c.group.v1.ListMembersRequest\x1a\x1d.group.v1.ListMembersResponse\x12A\n" +
+	"\bIsMember\x12\x19.group.v1.IsMemberRequest\x1a\x1a.group.v1.IsMemberResponseB2Z0github.com/adk-saugat/rally/gen/group/v1;groupv1b\x06proto3"
 
 var (
 	file_group_v1_group_proto_rawDescOnce sync.Once
@@ -404,7 +497,7 @@ func file_group_v1_group_proto_rawDescGZIP() []byte {
 	return file_group_v1_group_proto_rawDescData
 }
 
-var file_group_v1_group_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
+var file_group_v1_group_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_group_v1_group_proto_goTypes = []any{
 	(*CreateGroupRequest)(nil),  // 0: group.v1.CreateGroupRequest
 	(*CreateGroupResponse)(nil), // 1: group.v1.CreateGroupResponse
@@ -412,18 +505,22 @@ var file_group_v1_group_proto_goTypes = []any{
 	(*JoinGroupResponse)(nil),   // 3: group.v1.JoinGroupResponse
 	(*ListMembersRequest)(nil),  // 4: group.v1.ListMembersRequest
 	(*ListMembersResponse)(nil), // 5: group.v1.ListMembersResponse
-	(*User)(nil),                // 6: group.v1.User
+	(*IsMemberRequest)(nil),     // 6: group.v1.IsMemberRequest
+	(*IsMemberResponse)(nil),    // 7: group.v1.IsMemberResponse
+	(*User)(nil),                // 8: group.v1.User
 }
 var file_group_v1_group_proto_depIdxs = []int32{
-	6, // 0: group.v1.ListMembersResponse.members:type_name -> group.v1.User
+	8, // 0: group.v1.ListMembersResponse.members:type_name -> group.v1.User
 	0, // 1: group.v1.GroupService.CreateGroup:input_type -> group.v1.CreateGroupRequest
 	2, // 2: group.v1.GroupService.JoinGroup:input_type -> group.v1.JoinGroupRequest
 	4, // 3: group.v1.GroupService.ListMembers:input_type -> group.v1.ListMembersRequest
-	1, // 4: group.v1.GroupService.CreateGroup:output_type -> group.v1.CreateGroupResponse
-	3, // 5: group.v1.GroupService.JoinGroup:output_type -> group.v1.JoinGroupResponse
-	5, // 6: group.v1.GroupService.ListMembers:output_type -> group.v1.ListMembersResponse
-	4, // [4:7] is the sub-list for method output_type
-	1, // [1:4] is the sub-list for method input_type
+	6, // 4: group.v1.GroupService.IsMember:input_type -> group.v1.IsMemberRequest
+	1, // 5: group.v1.GroupService.CreateGroup:output_type -> group.v1.CreateGroupResponse
+	3, // 6: group.v1.GroupService.JoinGroup:output_type -> group.v1.JoinGroupResponse
+	5, // 7: group.v1.GroupService.ListMembers:output_type -> group.v1.ListMembersResponse
+	7, // 8: group.v1.GroupService.IsMember:output_type -> group.v1.IsMemberResponse
+	5, // [5:9] is the sub-list for method output_type
+	1, // [1:5] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -440,7 +537,7 @@ func file_group_v1_group_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_group_v1_group_proto_rawDesc), len(file_group_v1_group_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   7,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
