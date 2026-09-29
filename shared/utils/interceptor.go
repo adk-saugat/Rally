@@ -32,6 +32,28 @@ func UnaryAuth(jwtSecret string) grpc.UnaryServerInterceptor {
 	}
 }
 
+func StreamAuth(jwtSecret string) grpc.StreamServerInterceptor {
+	return func(server any, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
+		userID, err := userIDFromMetadata(stream.Context(), jwtSecret)
+		if err != nil {
+			return types.GRPCError(types.ErrUnauthorized)
+		}
+		return handler(server, &authenticatedStream{
+			ServerStream: stream,
+			ctx:          ContextWithUserID(stream.Context(), userID),
+		})
+	}
+}
+
+type authenticatedStream struct {
+	grpc.ServerStream
+	ctx context.Context
+}
+
+func (stream *authenticatedStream) Context() context.Context {
+	return stream.ctx
+}
+
 func userIDFromMetadata(ctx context.Context, jwtSecret string) (string, error) {
 	incomingMetadata, ok := metadata.FromIncomingContext(ctx)
 	if !ok {

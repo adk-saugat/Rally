@@ -5,8 +5,8 @@ import (
 
 	groupv1 "github.com/adk-saugat/rally/gen/group/v1"
 	"github.com/adk-saugat/rally/services/group/internal/service"
-	"github.com/adk-saugat/rally/services/group/internal/utils"
 	"github.com/adk-saugat/rally/shared/types"
+	"github.com/adk-saugat/rally/shared/utils"
 )
 
 type GroupHandler struct {

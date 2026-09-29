@@ -13,7 +13,7 @@ import (
 	"github.com/adk-saugat/rally/services/group/internal/handler"
 	"github.com/adk-saugat/rally/services/group/internal/repository"
 	"github.com/adk-saugat/rally/services/group/internal/service"
-	"github.com/adk-saugat/rally/services/group/internal/utils"
+	"github.com/adk-saugat/rally/shared/utils"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
