@@ -36,7 +36,7 @@ func main() {
 	authv1.RegisterAuthServiceServer(grpcServer, authHandler)
 	reflection.Register(grpcServer)
 
-	listener, err := net.Listen("tcp", ": "+cfg.Port)
+	listener, err := net.Listen("tcp", ":"+cfg.Port)
 	if err != nil {
 		log.Fatalf("listen: %v", err)
 	}
