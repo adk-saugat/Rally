@@ -1,3 +1,5 @@
+name: rally
+
 services:
   auth-postgres:
     image: postgres:16
@@ -40,6 +42,79 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
+  auth-migrate:
+    build:
+      context: ..
+      dockerfile: infra/auth/Dockerfile
+      target: migrate
+    environment:
+      GOOSE_DBSTRING: postgres://rally:rally@auth-postgres:5432/auth?sslmode=disable
+    depends_on:
+      auth-postgres:
+        condition: service_healthy
+
+  group-migrate:
+    build:
+      context: ..
+      dockerfile: infra/group/Dockerfile
+      target: migrate
+    environment:
+      GOOSE_DBSTRING: postgres://rally:rally@group-postgres:5432/group?sslmode=disable
+    depends_on:
+      group-postgres:
+        condition: service_healthy
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: infra/auth/Dockerfile
+      target: server
+    environment:
+      PORT: "50051"
+      DATABASE_URL: postgres://rally:rally@auth-postgres:5432/auth?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:-rally-dev-jwt-secret}
+    ports:
+      - "50051:50051"
+    depends_on:
+      auth-migrate:
+        condition: service_completed_successfully
+
+  group-service:
+    build:
+      context: ..
+      dockerfile: infra/group/Dockerfile
+      target: server
+    environment:
+      PORT: "50052"
+      DATABASE_URL: postgres://rally:rally@group-postgres:5432/group?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:-rally-dev-jwt-secret}
+      AUTH_ADDRESS: auth-service:50051
+    ports:
+      - "50052:50052"
+    depends_on:
+      group-migrate:
+        condition: service_completed_successfully
+      auth-service:
+        condition: service_started
+
+  location-service:
+    build:
+      context: ..
+      dockerfile: infra/location/Dockerfile
+      target: server
+    environment:
+      PORT: "50053"
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-rally-dev-jwt-secret}
+      GROUP_ADDRESS: group-service:50052
+    ports:
+      - "50053:50053"
+    depends_on:
+      redis:
+        condition: service_healthy
+      group-service:
+        condition: service_started
 
 volumes:
   auth_postgres:

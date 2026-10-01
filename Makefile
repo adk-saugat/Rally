@@ -1,104 +1,52 @@
-.PHONY: help gen tidy clean up down logs psql psql-group redis-cli \
-	migrate-up migrate-down migrate-status migrate-create \
-	migrate-group-up migrate-group-down migrate-group-status migrate-group-create \
-	run-auth run-group run-location
+.PHONY: help up down logs gen migration migrate-up migrate-down psql-auth psql-group redis-cli
 
 export PATH := $(PATH):$(shell go env GOPATH)/bin
 
-AUTH_DATABASE_URL ?= postgres://rally:rally@localhost:5433/auth?sslmode=disable
-GROUP_DATABASE_URL ?= postgres://rally:rally@localhost:5434/group?sslmode=disable
-DATABASE_URL ?= $(AUTH_DATABASE_URL)
-AUTH_GOOSE_DIR := services/auth/migrations
-GROUP_GOOSE_DIR := services/group/migrations
-GOOSE_DIR := $(AUTH_GOOSE_DIR)
+COMPOSE := docker compose -f infra/docker-compose.yml
 
 help:
-	@echo "make up                      start Auth/Group Postgres and Redis"
-	@echo "make down                    stop Postgres and Redis"
-	@echo "make logs                    tail Postgres and Redis logs"
-	@echo "make psql                    open a Postgres shell (auth)"
-	@echo "make psql-group              open a Postgres shell (group)"
-	@echo "make redis-cli               open a Redis shell"
-	@echo "make migrate-up              apply pending Auth migrations"
-	@echo "make migrate-down            roll back the last Auth migration"
-	@echo "make migrate-status          show Auth migration status"
-	@echo "make migrate-create name=add_foo   create a new Auth migration file"
-	@echo "make migrate-group-up        apply pending Group migrations"
-	@echo "make migrate-group-down      roll back the last Group migration"
-	@echo "make migrate-group-status    show Group migration status"
-	@echo "make migrate-group-create name=add_foo   create a new Group migration file"
-	@echo "make run-auth                start the Auth gRPC server"
-	@echo "make run-group               start the Group gRPC server"
-	@echo "make run-location            start the Location gRPC server"
-	@echo "make gen                     generate Go from .proto files"
-	@echo "make tidy                    go mod tidy"
-	@echo "make clean                   remove generated proto code"
-
-gen:
-	mkdir -p gen
-	protoc \
-	  -I proto \
-	  --go_out=gen --go_opt=paths=source_relative \
-	  --go-grpc_out=gen --go-grpc_opt=paths=source_relative \
-	  auth/v1/auth.proto \
-	  group/v1/group.proto \
-	  location/v1/location.proto
-
-tidy:
-	go mod tidy
-
-clean:
-	rm -rf gen/auth gen/group gen/location
+	@echo "make up                                    build and start everything (runs migrations)"
+	@echo "make down                                  stop all containers"
+	@echo "make logs [service=auth-service]           follow logs (all, or one service)"
+	@echo "make gen                                   generate Go from .proto files"
+	@echo "make migration service=group name=add_foo  create a new migration file"
+	@echo "make migrate-up                            apply pending Auth and Group migrations"
+	@echo "make migrate-down                          roll back the last Auth and Group migration"
+	@echo "make psql-auth                             open a Postgres shell (auth)"
+	@echo "make psql-group                            open a Postgres shell (group)"
+	@echo "make redis-cli                             open a Redis shell"
 
 up:
-	docker compose up -d auth-postgres group-postgres redis --wait
+	$(COMPOSE) up -d --build
 
 down:
-	docker compose down
+	$(COMPOSE) down
 
 logs:
-	docker compose logs -f auth-postgres group-postgres redis
+	$(COMPOSE) logs -f $(service)
 
-psql:
-	docker compose exec auth-postgres psql -U rally -d auth
+gen:
+	protoc -I proto \
+	  --go_out=gen --go_opt=paths=source_relative \
+	  --go-grpc_out=gen --go-grpc_opt=paths=source_relative \
+	  auth/v1/auth.proto group/v1/group.proto location/v1/location.proto
 
-psql-group:
-	docker compose exec group-postgres psql -U rally -d group
+migration:
+	goose -dir services/$(service)/migrations create $(name) sql
 
-redis-cli:
-	docker compose exec redis redis-cli
-
-migrate-up: up
-	goose -dir $(AUTH_GOOSE_DIR) postgres "$(AUTH_DATABASE_URL)" up
+migrate-up:
+	$(COMPOSE) run --rm --build auth-migrate up
+	$(COMPOSE) run --rm --build group-migrate up
 
 migrate-down:
-	goose -dir $(AUTH_GOOSE_DIR) postgres "$(AUTH_DATABASE_URL)" down
+	$(COMPOSE) run --rm --build auth-migrate down
+	$(COMPOSE) run --rm --build group-migrate down
 
-migrate-status:
-	goose -dir $(AUTH_GOOSE_DIR) postgres "$(AUTH_DATABASE_URL)" status
+psql-auth:
+	$(COMPOSE) exec auth-postgres psql -U rally -d auth
 
-migrate-create:
-	mkdir -p $(AUTH_GOOSE_DIR)
-	goose -dir $(AUTH_GOOSE_DIR) create $(name) sql
+psql-group:
+	$(COMPOSE) exec group-postgres psql -U rally -d group
 
-migrate-group-up: up
-	goose -dir $(GROUP_GOOSE_DIR) postgres "$(GROUP_DATABASE_URL)" up
-
-migrate-group-down:
-	goose -dir $(GROUP_GOOSE_DIR) postgres "$(GROUP_DATABASE_URL)" down
-
-migrate-group-status:
-	goose -dir $(GROUP_GOOSE_DIR) postgres "$(GROUP_DATABASE_URL)" status
-
-migrate-group-create:
-	mkdir -p $(GROUP_GOOSE_DIR)
-	goose -dir $(GROUP_GOOSE_DIR) create $(name) sql
-
-run-auth:
-	go run ./services/auth/cmd/server
-
-run-group:
-	go run ./services/group/cmd/server
-
-run-location:
-	go run ./services/location/cmd/server
+redis-cli:
+	$(COMPOSE) exec redis redis-cli
