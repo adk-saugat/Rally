@@ -1,0 +1,110 @@
+package handler
+
+import (
+	"errors"
+	"io"
+	"strings"
+	"time"
+
+	locationv1 "github.com/adk-saugat/rally/gen/location/v1"
+	"github.com/adk-saugat/rally/services/location/internal/service"
+	"github.com/adk-saugat/rally/shared/types"
+	"github.com/adk-saugat/rally/shared/utils"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+)
+
+type LocationHandler struct {
+	locationv1.UnimplementedLocationServiceServer
+	locations service.LocationService
+}
+
+func NewLocationHandler(locations service.LocationService) *LocationHandler {
+	return &LocationHandler{locations: locations}
+}
+
+func (handler *LocationHandler) StreamLocation(stream locationv1.LocationService_StreamLocationServer) error {
+	ctx := stream.Context()
+	userID := utils.UserIDFromContext(ctx)
+	if userID == "" {
+		return types.GRPCError(types.ErrUnauthorized)
+	}
+
+	firstRequest, err := stream.Recv()
+	if err != nil {
+		return recvError(err)
+	}
+
+	firstUpdate, err := updateFromRequest(firstRequest, userID)
+	if err != nil {
+		return types.GRPCError(err)
+	}
+
+	if err := handler.locations.Join(ctx, firstUpdate.GroupID, userID); err != nil {
+		return mapServiceError(err)
+	}
+
+	if err := handler.locations.Publish(ctx, firstUpdate); err != nil {
+		return mapServiceError(err)
+	}
+
+	for {
+		request, err := stream.Recv()
+		if err != nil {
+			return recvError(err)
+		}
+
+		update, err := updateFromRequest(request, userID)
+		if err != nil {
+			return types.GRPCError(err)
+		}
+		if update.GroupID != firstUpdate.GroupID {
+			return types.GRPCError(types.ErrInvalidInput)
+		}
+
+		if err := handler.locations.Publish(ctx, update); err != nil {
+			return mapServiceError(err)
+		}
+	}
+}
+
+func updateFromRequest(request *locationv1.LocationUpdate, userID string) (service.Update, error) {
+	if request == nil {
+		return service.Update{}, types.ErrInvalidInput
+	}
+
+	groupID := strings.TrimSpace(request.GetGroupId())
+	if groupID == "" {
+		return service.Update{}, types.ErrInvalidInput
+	}
+
+	timestampUnixMs := request.GetTimestampUnixMs()
+	if timestampUnixMs == 0 {
+		timestampUnixMs = time.Now().UnixMilli()
+	}
+
+	return service.Update{
+		GroupID:         groupID,
+		UserID:          userID,
+		Latitude:        request.GetLatitude(),
+		Longitude:       request.GetLongitude(),
+		TimestampUnixMs: timestampUnixMs,
+	}, nil
+}
+
+func recvError(err error) error {
+	if err == nil || errors.Is(err, io.EOF) {
+		return nil
+	}
+	return mapServiceError(err)
+}
+
+func mapServiceError(err error) error {
+	if err == nil {
+		return nil
+	}
+	if _, ok := status.FromError(err); ok && status.Code(err) != codes.Unknown {
+		return err
+	}
+	return types.GRPCError(err)
+}
