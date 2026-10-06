@@ -18,14 +18,17 @@ type Position struct {
 type PositionRepository interface {
 	Set(ctx context.Context, groupID, userID string, position Position) error
 	Get(ctx context.Context, groupID, userID string) (*Position, error)
-	Close() error
 }
 
 type positionRepository struct {
 	client *redis.Client
 }
 
-func Connect(ctx context.Context, redisURL string) (PositionRepository, error) {
+func NewPositionRepository(client *redis.Client) PositionRepository {
+	return &positionRepository{client: client}
+}
+
+func Connect(ctx context.Context, redisURL string) (*redis.Client, error) {
 	options, err := redis.ParseURL(redisURL)
 	if err != nil {
 		return nil, err
@@ -37,7 +40,7 @@ func Connect(ctx context.Context, redisURL string) (PositionRepository, error) {
 		return nil, err
 	}
 
-	return &positionRepository{client: client}, nil
+	return client, nil
 }
 
 func (repo *positionRepository) Set(ctx context.Context, groupID, userID string, position Position) error {
@@ -62,10 +65,6 @@ func (repo *positionRepository) Get(ctx context.Context, groupID, userID string)
 		return nil, err
 	}
 	return &position, nil
-}
-
-func (repo *positionRepository) Close() error {
-	return repo.client.Close()
 }
 
 func positionKey(groupID, userID string) string {

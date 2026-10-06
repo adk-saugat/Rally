@@ -24,11 +24,13 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	positions, err := repository.Connect(ctx, cfg.RedisURL)
+	redisClient, err := repository.Connect(ctx, cfg.RedisURL)
 	if err != nil {
 		log.Fatalf("connect redis: %v", err)
 	}
-	defer positions.Close()
+	defer redisClient.Close()
+
+	positions := repository.NewPositionRepository(redisClient)
 
 	groupClient, err := clients.NewGroupClient(cfg.GroupAddress)
 	if err != nil {
