@@ -31,6 +31,7 @@ func main() {
 	defer redisClient.Close()
 
 	positions := repository.NewPositionRepository(redisClient)
+	broker := repository.NewLocationBroker(redisClient)
 
 	groupClient, err := clients.NewGroupClient(cfg.GroupAddress)
 	if err != nil {
@@ -38,7 +39,7 @@ func main() {
 	}
 	defer groupClient.Close()
 
-	locations := service.NewLocationService(positions, groupClient)
+	locations := service.NewLocationService(positions, broker, groupClient)
 	locationHandler := handler.NewLocationHandler(locations)
 
 	grpcServer := grpc.NewServer(
