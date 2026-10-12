@@ -1,5 +1,7 @@
 # Rally — Learning Roadmap
 
+The public project page is the [root README](../README.md). This file is the build plan.
+
 ### Go + gRPC + Protobuf Microservices
 
 ---
