@@ -39,9 +39,13 @@ func main() {
 	}
 	defer locationClient.Close()
 
+	authHandler := handler.NewAuthHandler(authClient)
+
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
 	router.GET("/health", handler.Health)
+	router.POST("/auth/signup", authHandler.SignUp)
+	router.POST("/auth/login", authHandler.Login)
 
 	httpServer := &http.Server{
 		Addr:    ":" + cfg.Port,
