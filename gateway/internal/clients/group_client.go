@@ -3,6 +3,7 @@ package clients
 import (
 	"context"
 
+	"github.com/adk-saugat/rally/gateway/internal/utils/grpcmeta"
 	groupv1 "github.com/adk-saugat/rally/gen/group/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -32,7 +33,7 @@ func NewGroupClient(address string) (*GroupClient, error) {
 }
 
 func (client *GroupClient) CreateGroup(ctx context.Context, name string) (groupID, inviteCode string, err error) {
-	response, err := client.groups.CreateGroup(outgoingWithAuthorization(ctx), &groupv1.CreateGroupRequest{
+	response, err := client.groups.CreateGroup(grpcmeta.OutgoingWithAuthorization(ctx), &groupv1.CreateGroupRequest{
 		Name: name,
 	})
 	if err != nil {
@@ -42,7 +43,7 @@ func (client *GroupClient) CreateGroup(ctx context.Context, name string) (groupI
 }
 
 func (client *GroupClient) JoinGroup(ctx context.Context, inviteCode string) (groupID, name string, err error) {
-	response, err := client.groups.JoinGroup(outgoingWithAuthorization(ctx), &groupv1.JoinGroupRequest{
+	response, err := client.groups.JoinGroup(grpcmeta.OutgoingWithAuthorization(ctx), &groupv1.JoinGroupRequest{
 		InviteCode: inviteCode,
 	})
 	if err != nil {
@@ -52,7 +53,7 @@ func (client *GroupClient) JoinGroup(ctx context.Context, inviteCode string) (gr
 }
 
 func (client *GroupClient) ListMembers(ctx context.Context, groupID string) ([]Member, error) {
-	response, err := client.groups.ListMembers(outgoingWithAuthorization(ctx), &groupv1.ListMembersRequest{
+	response, err := client.groups.ListMembers(grpcmeta.OutgoingWithAuthorization(ctx), &groupv1.ListMembersRequest{
 		GroupId: groupID,
 	})
 	if err != nil {

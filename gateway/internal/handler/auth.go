@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/adk-saugat/rally/gateway/internal/clients"
+	"github.com/adk-saugat/rally/gateway/internal/utils/httperr"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,7 +36,7 @@ func (handler *AuthHandler) SignUp(context *gin.Context) {
 
 	userID, err := handler.auth.SignUp(context.Request.Context(), request.FirstName, request.Email, request.Password)
 	if err != nil {
-		writeError(context, err)
+		httperr.Write(context, err)
 		return
 	}
 
@@ -51,7 +52,7 @@ func (handler *AuthHandler) Login(context *gin.Context) {
 
 	token, err := handler.auth.Login(context.Request.Context(), request.Email, request.Password)
 	if err != nil {
-		writeError(context, err)
+		httperr.Write(context, err)
 		return
 	}
 

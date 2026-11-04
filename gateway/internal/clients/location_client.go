@@ -3,6 +3,7 @@ package clients
 import (
 	"context"
 
+	"github.com/adk-saugat/rally/gateway/internal/utils/grpcmeta"
 	locationv1 "github.com/adk-saugat/rally/gen/location/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -26,7 +27,7 @@ func NewLocationClient(address string) (*LocationClient, error) {
 }
 
 func (client *LocationClient) StreamLocation(ctx context.Context) (locationv1.LocationService_StreamLocationClient, error) {
-	return client.locations.StreamLocation(outgoingWithAuthorization(ctx))
+	return client.locations.StreamLocation(grpcmeta.OutgoingWithAuthorization(ctx))
 }
 
 func (client *LocationClient) Close() error {

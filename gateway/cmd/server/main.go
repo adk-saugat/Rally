@@ -40,12 +40,16 @@ func main() {
 	defer locationClient.Close()
 
 	authHandler := handler.NewAuthHandler(authClient)
+	groupHandler := handler.NewGroupHandler(groupClient)
 
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
 	router.GET("/health", handler.Health)
 	router.POST("/auth/signup", authHandler.SignUp)
 	router.POST("/auth/login", authHandler.Login)
+	router.POST("/groups", groupHandler.CreateGroup)
+	router.POST("/groups/join", groupHandler.JoinGroup)
+	router.GET("/groups/:group_id/members", groupHandler.ListMembers)
 
 	httpServer := &http.Server{
 		Addr:    ":" + cfg.Port,

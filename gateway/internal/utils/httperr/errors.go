@@ -1,4 +1,4 @@
-package handler
+package httperr
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func writeError(context *gin.Context, err error) {
+func Write(context *gin.Context, err error) {
 	if err == nil {
 		return
 	}

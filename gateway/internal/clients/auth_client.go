@@ -13,6 +13,7 @@ type AuthClient struct {
 	auth       authv1.AuthServiceClient
 }
 
+
 func NewAuthClient(address string) (*AuthClient, error) {
 	connection, err := grpc.NewClient(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {

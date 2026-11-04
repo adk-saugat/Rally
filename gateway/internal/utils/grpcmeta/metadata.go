@@ -1,4 +1,4 @@
-package clients
+package grpcmeta
 
 import (
 	"context"
@@ -13,7 +13,7 @@ func ContextWithAuthorization(ctx context.Context, token string) context.Context
 	return metadata.AppendToOutgoingContext(ctx, "authorization", "Bearer "+token)
 }
 
-func outgoingWithAuthorization(ctx context.Context) context.Context {
+func OutgoingWithAuthorization(ctx context.Context) context.Context {
 	incomingMetadata, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
 		return ctx
