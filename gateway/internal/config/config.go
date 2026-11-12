@@ -11,6 +11,7 @@ type Config struct {
 	AuthAddress     string
 	GroupAddress    string
 	LocationAddress string
+	JWTSecret       string
 }
 
 func Load() Config {
@@ -22,6 +23,7 @@ func Load() Config {
 		AuthAddress:     env("AUTH_ADDRESS", "localhost:50051"),
 		GroupAddress:    env("GROUP_ADDRESS", "localhost:50052"),
 		LocationAddress: env("LOCATION_ADDRESS", "localhost:50053"),
+		JWTSecret:       env("JWT_SECRET", "rally-dev-jwt-secret"),
 	}
 }
 

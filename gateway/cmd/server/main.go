@@ -41,6 +41,7 @@ func main() {
 
 	authHandler := handler.NewAuthHandler(authClient)
 	groupHandler := handler.NewGroupHandler(groupClient)
+	locationHandler := handler.NewLocationHandler(locationClient, cfg.JWTSecret)
 
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery())
@@ -50,6 +51,7 @@ func main() {
 	router.POST("/groups", groupHandler.CreateGroup)
 	router.POST("/groups/join", groupHandler.JoinGroup)
 	router.GET("/groups/:group_id/members", groupHandler.ListMembers)
+	router.GET("/groups/:group_id/ws", locationHandler.LocationStream)
 
 	httpServer := &http.Server{
 		Addr:    ":" + cfg.Port,
