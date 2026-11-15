@@ -112,16 +112,16 @@ func relayLocations(ctx context.Context, connection *websocket.Conn, stream loca
 		done <- sendMemberLocations(connection, stream)
 	}()
 
-	var err error
 	completed := 0
+	var err error
 	select {
 	case err = <-done:
 		completed++
 	case <-ctx.Done():
 		err = ctx.Err()
 	}
-	cancel()
 	closeLocationConnection(connection, err)
+	cancel()
 	_ = connection.Close()
 	for ; completed < 2; completed++ {
 		<-done

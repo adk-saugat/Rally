@@ -1,6 +1,9 @@
 # env
 .env
+.env.*
 **/.env
+**/.env.*
+!**/.env.example
 
 # OS
 .DS_Store
@@ -14,6 +17,7 @@
 *.test
 *.out
 vendor/
+__pycache__/
 
 # IDE
 .idea/

@@ -1,6 +1,6 @@
 # Rally — Learning Roadmap
 
-The public project page is the [root README](../README.md). This file is the build plan.
+The public project page is the [root README](../README.md). This file is the original backend learning/build plan. The current mobile implementation sequence is in [app/ROADMAP.md](../app/ROADMAP.md).
 
 ### Go + gRPC + Protobuf Microservices
 
@@ -314,7 +314,7 @@ When you're ready to actually build this part, come back and we can design the e
 - `github.com/gorilla/websocket` — WebSocket for the Gateway
 - PostGIS — Postgres extension for geo queries (later phases)
 - `react-native-maps` — native map component (Google Maps provider)
-- Google Cloud account + Maps SDK API key (Android/iOS) — free for map display; billing details required but no charge expected at hobby scale
+- Google Cloud project + restricted Maps SDK API keys (Android/iOS) — enable billing and review current SDK pricing and usage controls before release
 
 ---
 

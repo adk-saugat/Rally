@@ -6,7 +6,7 @@ You sign up, create a group (a weekend trip, a family drive, a hike), and send t
 
 No chat, ETAs, or geofences yet. Those can come later. The point is that when Alice walks down a street, Bob’s map updates without anyone refreshing.
 
-The mobile app and the HTTP gateway in front of it are not built yet. The backend that would feed that map is: accounts, groups, and a live location stream.
+The backend and HTTP/WebSocket gateway provide accounts, groups, and a live location stream. The mobile app has a Google Maps workspace after login, secure session persistence, foreground GPS, and group controls over the map. Native Maps keys and device setup are described in [app/SETUP.md](app/SETUP.md).
 
 ---
 
@@ -65,6 +65,43 @@ grpcui -plaintext localhost:50051
 ```
 
 Group and Location expect `authorization: Bearer <token>` from Auth `Login`. Open two Location streams for the same group (two users) and send coordinates from each — the other stream should print the update.
+
+## Mobile app setup
+
+The Expo TypeScript app lives in `app/`. Start the backend with `make up`, then
+start its HTTP gateway in another terminal:
+
+```bash
+go run ./gateway/cmd/server
+```
+
+Install Node.js 22 LTS or newer, then start the app:
+
+```bash
+cd app
+npm ci
+npm start
+```
+
+Open it with a matching Expo Go version, or press `i` for an iOS simulator or
+`a` for an Android emulator with the native tooling installed. Use **Sign up** or **Log in** to open the authentication forms.
+
+The gateway URL defaults to `http://localhost:8080` on iOS and
+`http://10.0.2.2:8080` on the Android emulator. For a physical phone, copy
+`app/.env.example` to `app/.env` and set `EXPO_PUBLIC_API_URL` to your computer's
+LAN address, for example `http://192.168.1.42:8080`. Keep both devices on the
+same network and allow access to port 8080. Expo's tunnel does not tunnel the
+gateway. Reload the app after changing the URL. Public Expo environment
+variables are included in the app bundle; keep secrets out of them.
+
+Run `npm run typecheck` inside `app/` to check TypeScript. See [app/README.md](app/README.md) for the source layout and current app capabilities.
+See [app/SETUP.md](app/SETUP.md) to configure Google Maps and test location sharing.
+
+## What belongs in Git
+
+Real `.env` files, dependencies, Expo caches, and generated native iOS/Android
+projects are ignored. Commit `.env.example`, app configuration, source files, and
+package lockfiles so another checkout can reproduce the setup.
 
 ## Repo layout
 
