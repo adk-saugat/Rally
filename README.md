@@ -1,115 +1,56 @@
 # Rally
 
-Rally is live location sharing for a trip group, in the same spirit as Google Maps’ “share my location,” but only for people you invited.
+**Live location sharing for the people you're actually with.**
 
-You sign up, create a group (a weekend trip, a family drive, a hike), and send the invite code. Everyone who joins streams their GPS. Each person sees the others moving on a map in near real time. That is the product: dots on a map, for your group, while you are out together.
+Rally is a full-stack, real-time location app. You create a group for a road trip, a hike, or a night out, share an invite code, and everyone who joins sees each other move on a live map. It's like "share my location," but only the people in your group can see you.
 
-No chat, ETAs, or geofences yet. Those can come later. The point is that when Alice walks down a street, Bob’s map updates without anyone refreshing.
+I built the whole thing myself: three Go microservices that talk over gRPC, an HTTP/WebSocket API gateway, Postgres and Redis behind them, and a React Native mobile app on top.
 
-The backend and HTTP/WebSocket gateway provide accounts, groups, and a live location stream. The mobile app has a Google Maps workspace after login, secure session persistence, foreground GPS, and group controls over the map. Native Maps keys and device setup are described in [app/SETUP.md](app/SETUP.md).
+<p align="center">
+  <img src="docs/screenshots/map.png" width="300" alt="Rally map screen with Create group and Join group controls">
+</p>
 
 ---
 
-## How it is built
+## How Rally works
 
-Three Go services talk to each other over gRPC. A client (today [grpcurl](https://github.com/fullstorydev/grpcurl) or [grpcui](https://github.com/fullstorydev/grpcui); later a phone) calls them with a JWT from login.
-
-- **Auth** — sign up, log in, issue a JWT, look up users by id
-- **Group** — create a group, join with an invite code, list members (names come from Auth)
-- **Location** — you send your coordinates on a bidirectional stream; other members of that group get those updates. Latest point is stored in Redis. Redis pub/sub fans each update out to everyone else who is connected.
-
-Authorization stays with the service that owns it. Location asks Group “is this user in this group?” before it accepts a stream. Group asks Auth for names when it lists members. Group only stores user ids, not emails.
+1. **Sign up and log in.** The Auth service hashes your password with bcrypt and gives you a JWT. The app keeps that token in the phone's secure storage, so you stay logged in.
+2. **Create or join a group.** The Group service makes the group and an invite code. Friends type in the code to join. Group stores only user IDs and asks Auth for display names, so user data lives in one place.
+3. **Share your location.** The app opens a WebSocket to the gateway and sends your coordinates. The gateway checks your JWT and passes the updates to the Location service over a two-way gRPC stream.
+4. **Check membership.** Before Location accepts any updates, it asks Group whether you belong to that group. People outside the group can't send or see locations.
+5. **Send to everyone in the group.** Location saves your latest position in Redis and publishes it to the group's Redis pub/sub channel. Every other member's connection listens on that channel, so their maps move right away. Nobody has to refresh.
 
 ```
-  client (grpcurl / grpcui today, app later)
-        │
-   ┌────┼────────────┐
-   ▼    ▼            ▼
- Auth  Group     Location
-   │     │            │
-   │     └──► Auth    └──► Group
-   ▼     ▼            ▼
-Postgres Postgres   Redis
+                 ┌──────────────────────────────┐
+                 │  React Native app (Expo, TS) │
+                 └──────────────┬───────────────┘
+                     HTTPS/JSON │  WebSocket
+                 ┌──────────────▼───────────────┐
+                 │   API Gateway (Go + Gin)     │
+                 │   JWT auth · WS ↔ gRPC relay │
+                 └───┬──────────┬───────────┬───┘
+                gRPC │     gRPC │      gRPC │ (bidi stream)
+              ┌──────▼──┐  ┌────▼────┐  ┌───▼──────┐
+              │  Auth   │◄─┤  Group  │◄─┤ Location │
+              └────┬────┘  └────┬────┘  └────┬─────┘
+                   ▼            ▼            ▼
+               Postgres     Postgres       Redis
+                                       (pub/sub + cache)
 ```
 
-Each service is `handler` → `service` → `repository`. Calls to another service go through `internal/clients`.
+Each service owns its own data and follows the same layers: `handler → service → repository`. The gateway is the only part the phone talks to, so the internal gRPC services are never exposed directly. Because Redis passes the updates between servers, more copies of the Location service can run side by side, and everyone in a group still sees each other.
 
-The longer build plan, including the gateway and React Native map, is in [docs/roadmap.md](docs/roadmap.md).
+## Tech stack
 
-## Run it
+| Layer | Tools |
+|---|---|
+| **Mobile app** | React Native, Expo, TypeScript, React Navigation, react-native-maps (Google Maps / Apple Maps), expo-location, expo-secure-store |
+| **Backend services** | Go, gRPC, Protocol Buffers |
+| **API gateway** | Go, Gin, Gorilla WebSocket |
+| **Databases** | PostgreSQL 16 (pgx, goose migrations), Redis 7 (pub/sub and latest-position cache) |
+| **Auth** | JWT (golang-jwt), bcrypt, gRPC auth interceptors |
+| **Infrastructure** | Docker, Docker Compose, Make |
 
-You need Docker.
+---
 
-```bash
-make up
-```
-
-That builds the images, runs Auth and Group migrations, and starts Postgres, Redis, and the three services.
-
-```bash
-make logs          # all services
-make down          # stop everything
-```
-
-| Service  | Port  |
-|----------|-------|
-| Auth     | 50051 |
-| Group    | 50052 |
-| Location | 50053 |
-
-gRPC reflection is on, so you do not need extra proto flags:
-
-```bash
-grpcurl -plaintext localhost:50051 list
-grpcui -plaintext localhost:50051
-```
-
-Group and Location expect `authorization: Bearer <token>` from Auth `Login`. Open two Location streams for the same group (two users) and send coordinates from each — the other stream should print the update.
-
-## Mobile app setup
-
-The Expo TypeScript app lives in `app/`. Start the backend with `make up`, then
-start its HTTP gateway in another terminal:
-
-```bash
-go run ./gateway/cmd/server
-```
-
-Install Node.js 22 LTS or newer, then start the app:
-
-```bash
-cd app
-npm ci
-npm start
-```
-
-Open it with a matching Expo Go version, or press `i` for an iOS simulator or
-`a` for an Android emulator with the native tooling installed. Use **Sign up** or **Log in** to open the authentication forms.
-
-The gateway URL defaults to `http://localhost:8080` on iOS and
-`http://10.0.2.2:8080` on the Android emulator. For a physical phone, copy
-`app/.env.example` to `app/.env` and set `EXPO_PUBLIC_API_URL` to your computer's
-LAN address, for example `http://192.168.1.42:8080`. Keep both devices on the
-same network and allow access to port 8080. Expo's tunnel does not tunnel the
-gateway. Reload the app after changing the URL. Public Expo environment
-variables are included in the app bundle; keep secrets out of them.
-
-Run `npm run typecheck` inside `app/` to check TypeScript. See [app/README.md](app/README.md) for the source layout and current app capabilities.
-See [app/SETUP.md](app/SETUP.md) to configure Google Maps and test location sharing.
-
-## What belongs in Git
-
-Real `.env` files, dependencies, Expo caches, and generated native iOS/Android
-projects are ignored. Commit `.env.example`, app configuration, source files, and
-package lockfiles so another checkout can reproduce the setup.
-
-## Repo layout
-
-```
-proto/          service contracts
-gen/            generated Go from those protos
-services/       auth, group, location
-shared/         JWT helpers and shared errors
-infra/          Dockerfiles and Compose
-docs/roadmap.md how the project is being built
-```
+Built by [Saugat Adhikari](https://github.com/adk-saugat).
